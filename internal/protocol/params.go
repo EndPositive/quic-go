@@ -114,7 +114,7 @@ const RetiredConnectionIDDeleteTimeout = 5 * time.Second
 // This avoids splitting up STREAM frames into small pieces, which has 2 advantages:
 // 1. it reduces the framing overhead
 // 2. it reduces the head-of-line blocking, when a packet is lost
-const MinStreamFrameSize ByteCount = 128
+const MinStreamFrameSize ByteCount = 64
 
 // MaxPostHandshakeCryptoFrameSize is the maximum size of CRYPTO frames
 // we send after the handshake completes.

@@ -114,7 +114,7 @@ const MaxPacketBufferSize = 1452
 const MaxLargePacketBufferSize = 20 * 1024
 
 // MinInitialPacketSize is the minimum size an Initial packet is required to have.
-const MinInitialPacketSize = 1200
+const MinInitialPacketSize = 129
 
 // MinUnknownVersionPacketSize is the minimum size a packet with an unknown version
 // needs to have in order to trigger a Version Negotiation packet.
