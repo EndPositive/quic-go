@@ -8,7 +8,6 @@ import (
 	"github.com/quic-go/quic-go/internal/protocol"
 	"github.com/quic-go/quic-go/internal/utils/ringbuffer"
 	"github.com/quic-go/quic-go/internal/wire"
-	"github.com/quic-go/quic-go/quicvarint"
 )
 
 const (
@@ -186,10 +185,6 @@ func (f *framer) AppendStreamFrames(frames []ackhandler.StreamFrame, maxLen prot
 			continue
 		}
 		remainingLen := maxLen - length
-		// For the last STREAM frame, we'll remove the DataLen field later.
-		// Therefore, we can pretend to have more bytes available when popping
-		// the STREAM frame (which will always have the DataLen set).
-		remainingLen += protocol.ByteCount(quicvarint.Len(uint64(remainingLen)))
 		frame, ok, hasMoreData := str.popStreamFrame(remainingLen, v)
 		if hasMoreData { // put the stream back in the queue (at the end)
 			f.streamQueue.PushBack(id)
