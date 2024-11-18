@@ -240,6 +240,7 @@ var newConnection = func(
 		conn:                conn,
 		config:              conf,
 		handshakeDestConnID: destConnID,
+		origDestConnID:      origDestConnID,
 		srcConnIDLen:        srcConnID.Len(),
 		tokenGenerator:      tokenGenerator,
 		oneRTTStream:        newCryptoStream(),
@@ -255,6 +256,8 @@ var newConnection = func(
 	}
 	s.connIDManager = newConnIDManager(
 		destConnID,
+		func(id protocol.ConnectionID) { runner.Add(id, s) },
+		func(id protocol.ConnectionID) { runner.Retire(id) },
 		func(token protocol.StatelessResetToken) { runner.AddResetToken(token, s) },
 		runner.RemoveResetToken,
 		s.queueControlFrame,
@@ -364,6 +367,8 @@ var newClientConnection = func(
 	}
 	s.connIDManager = newConnIDManager(
 		destConnID,
+		func(id protocol.ConnectionID) { runner.Add(id, s) },
+		func(id protocol.ConnectionID) { runner.Retire(id) },
 		func(token protocol.StatelessResetToken) { runner.AddResetToken(token, s) },
 		runner.RemoveResetToken,
 		s.queueControlFrame,

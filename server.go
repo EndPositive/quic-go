@@ -705,6 +705,10 @@ func (s *baseServer) handleInitialImpl(p receivedPacket, hdr *wire.Header) error
 		conn.closeWithTransportError(qerr.ConnectionRefused)
 		return nil
 	}
+
+	// Also add the peer's original source connection ID to the connection map.
+	s.connHandler.Add(hdr.SrcConnectionID, conn)
+
 	// Pass queued 0-RTT to the newly established connection.
 	if q, ok := s.zeroRTTQueues[hdr.DestConnectionID]; ok {
 		for _, p := range q.packets {

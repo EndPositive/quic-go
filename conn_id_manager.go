@@ -32,6 +32,11 @@ type connIDManager struct {
 	packetsSinceLastChange uint32
 	packetsPerConnectionID uint32
 
+	// addPeerConnectionID is called when the peer announces a new connection ID for itself
+	addPeerConnectionID func(protocol.ConnectionID)
+	// retirePeerConnectionID is called when the peer connection ID retired
+	retirePeerConnectionID func(protocol.ConnectionID)
+
 	addStatelessResetToken    func(protocol.StatelessResetToken)
 	removeStatelessResetToken func(protocol.StatelessResetToken)
 	queueControlFrame         func(wire.Frame)
@@ -39,12 +44,16 @@ type connIDManager struct {
 
 func newConnIDManager(
 	initialDestConnID protocol.ConnectionID,
+	addPeerConnectionID func(id protocol.ConnectionID),
+	retirePeerConnectionID func(id protocol.ConnectionID),
 	addStatelessResetToken func(protocol.StatelessResetToken),
 	removeStatelessResetToken func(protocol.StatelessResetToken),
 	queueControlFrame func(wire.Frame),
 ) *connIDManager {
 	return &connIDManager{
 		activeConnectionID:        initialDestConnID,
+		addPeerConnectionID:       addPeerConnectionID,
+		retirePeerConnectionID:    retirePeerConnectionID,
 		addStatelessResetToken:    addStatelessResetToken,
 		removeStatelessResetToken: removeStatelessResetToken,
 		queueControlFrame:         queueControlFrame,
@@ -88,6 +97,7 @@ func (h *connIDManager) add(f *wire.NewConnectionIDFrame) error {
 				SequenceNumber: el.Value.SequenceNumber,
 			})
 			h.queue.Remove(el)
+			h.retirePeerConnectionID(el.Value.ConnectionID)
 		}
 		h.highestRetired = f.RetirePriorTo
 	}
@@ -111,6 +121,7 @@ func (h *connIDManager) add(f *wire.NewConnectionIDFrame) error {
 func (h *connIDManager) addConnectionID(seq uint64, connID protocol.ConnectionID, resetToken protocol.StatelessResetToken) error {
 	// insert a new element at the end
 	if h.queue.Len() == 0 || h.queue.Back().Value.SequenceNumber < seq {
+		h.addPeerConnectionID(connID)
 		h.queue.PushBack(newConnID{
 			SequenceNumber:      seq,
 			ConnectionID:        connID,
@@ -130,6 +141,7 @@ func (h *connIDManager) addConnectionID(seq uint64, connID protocol.ConnectionID
 			break
 		}
 		if el.Value.SequenceNumber > seq {
+			h.addPeerConnectionID(connID)
 			h.queue.InsertBefore(newConnID{
 				SequenceNumber:      seq,
 				ConnectionID:        connID,

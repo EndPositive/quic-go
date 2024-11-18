@@ -390,6 +390,25 @@ func (t *Transport) listen(conn rawConn) {
 	}
 }
 
+func (t *Transport) GetHandshakeReadDestID(conn protocol.ConnectionID) (ConnectionID, bool) {
+	handler, ok := t.server.connHandler.Get(conn)
+	if !ok {
+		return ConnectionID{}, ok
+	}
+
+	return handler.(*connection).origDestConnID, ok
+}
+
+func (t *Transport) GetActiveDestConnectionID(conn protocol.ConnectionID) (ConnectionID, bool) {
+	connHandler := t.handlerMap
+	handler, ok := connHandler.Get(conn)
+	if !ok {
+		return ConnectionID{}, ok
+	}
+
+	return handler.(*connection).connIDManager.activeConnectionID, ok
+}
+
 func (t *Transport) handlePacket(p receivedPacket) {
 	if len(p.data) == 0 {
 		return

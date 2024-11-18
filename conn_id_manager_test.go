@@ -24,6 +24,8 @@ var _ = Describe("Connection ID Manager", func() {
 		removedTokens = nil
 		m = newConnIDManager(
 			initialConnID,
+			func(protocol.ConnectionID) {},
+			func(protocol.ConnectionID) {},
 			func(token protocol.StatelessResetToken) { tokenAdded = &token },
 			func(token protocol.StatelessResetToken) { removedTokens = append(removedTokens, token) },
 			func(f wire.Frame,
