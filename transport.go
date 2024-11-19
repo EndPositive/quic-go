@@ -10,6 +10,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"golang.org/x/exp/maps"
+
 	"github.com/quic-go/quic-go/internal/protocol"
 	"github.com/quic-go/quic-go/internal/utils"
 	"github.com/quic-go/quic-go/internal/wire"
@@ -399,9 +401,21 @@ func (t *Transport) GetHandshakeReadDestID(conn protocol.ConnectionID) (Connecti
 	return handler.(*connection).origDestConnID, ok
 }
 
+func (t *Transport) GetActiveDestConnectionIDs() []protocol.ConnectionID {
+	var handlers = make(map[*connection]struct{})
+	for _, handler := range t.handlerMap.(*packetHandlerMap).handlers {
+		handlers[handler.(*connection)] = struct{}{}
+	}
+
+	var connectionIds = make(map[protocol.ConnectionID]struct{})
+	for handler, _ := range handlers {
+		connectionIds[handler.connIDManager.activeConnectionID] = struct{}{}
+	}
+	return maps.Keys(connectionIds)
+}
+
 func (t *Transport) GetActiveDestConnectionID(conn protocol.ConnectionID) (ConnectionID, bool) {
-	connHandler := t.handlerMap
-	handler, ok := connHandler.Get(conn)
+	handler, ok := t.handlerMap.Get(conn)
 	if !ok {
 		return ConnectionID{}, ok
 	}
