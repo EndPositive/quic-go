@@ -339,7 +339,10 @@ type Config struct {
 	Allow0RTT bool
 	// Enable QUIC datagram support (RFC 9221).
 	EnableDatagrams bool
-	Tracer          func(context.Context, logging.Perspective, ConnectionID) *logging.ConnectionTracer
+	// Hardcoded congestion window used instead of deriving from the congestion algorithm.
+	ForceCongestionWindow protocol.ByteCount
+
+	Tracer func(context.Context, logging.Perspective, ConnectionID) *logging.ConnectionTracer
 }
 
 // ClientHelloInfo contains information about an incoming connection attempt.

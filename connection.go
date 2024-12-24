@@ -281,6 +281,7 @@ var newConnection = func(
 		clientAddressValidated,
 		s.conn.capabilities().ECN,
 		s.perspective,
+		conf.ForceCongestionWindow,
 		s.tracer,
 		s.logger,
 	)
@@ -393,6 +394,7 @@ var newClientConnection = func(
 		false, // has no effect
 		s.conn.capabilities().ECN,
 		s.perspective,
+		conf.ForceCongestionWindow,
 		s.tracer,
 		s.logger,
 	)

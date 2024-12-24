@@ -20,6 +20,8 @@ const (
 )
 
 type cubicSender struct {
+	forceCongestionWindow protocol.ByteCount
+
 	hybridSlowStart HybridSlowStart
 	rttStats        *utils.RTTStats
 	cubic           *Cubic
@@ -70,6 +72,7 @@ func NewCubicSender(
 	rttStats *utils.RTTStats,
 	initialMaxDatagramSize protocol.ByteCount,
 	reno bool,
+	forceCongestionWindow protocol.ByteCount,
 	tracer *logging.ConnectionTracer,
 ) *cubicSender {
 	return newCubicSender(
@@ -79,6 +82,7 @@ func NewCubicSender(
 		initialMaxDatagramSize,
 		initialCongestionWindow*initialMaxDatagramSize,
 		protocol.MaxCongestionWindowPackets*initialMaxDatagramSize,
+		forceCongestionWindow,
 		tracer,
 	)
 }
@@ -90,9 +94,11 @@ func newCubicSender(
 	initialMaxDatagramSize,
 	initialCongestionWindow,
 	initialMaxCongestionWindow protocol.ByteCount,
+	forceCongestionWindow protocol.ByteCount,
 	tracer *logging.ConnectionTracer,
 ) *cubicSender {
 	c := &cubicSender{
+		forceCongestionWindow:      forceCongestionWindow,
 		rttStats:                   rttStats,
 		largestSentPacketNumber:    protocol.InvalidPacketNumber,
 		largestAckedPacketNumber:   protocol.InvalidPacketNumber,
@@ -160,6 +166,9 @@ func (c *cubicSender) InSlowStart() bool {
 }
 
 func (c *cubicSender) GetCongestionWindow() protocol.ByteCount {
+	if c.forceCongestionWindow > 0 {
+		return c.forceCongestionWindow
+	}
 	return c.congestionWindow
 }
 

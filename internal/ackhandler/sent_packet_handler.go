@@ -115,6 +115,7 @@ func newSentPacketHandler(
 	clientAddressValidated bool,
 	enableECN bool,
 	pers protocol.Perspective,
+	forceCongestionWindow protocol.ByteCount,
 	tracer *logging.ConnectionTracer,
 	logger utils.Logger,
 ) *sentPacketHandler {
@@ -123,6 +124,7 @@ func newSentPacketHandler(
 		rttStats,
 		initialMaxDatagramSize,
 		true, // use Reno
+		forceCongestionWindow,
 		tracer,
 	)
 
